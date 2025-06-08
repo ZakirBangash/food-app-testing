@@ -1,5 +1,6 @@
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Link, router } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { useAuthStore } from '../../store/auth';
 
@@ -29,51 +30,61 @@ export default function PreferencesScreen() {
   const handleContinue = async () => {
     // Here you would typically save the preferences to your backend
     // For now, we'll just navigate to the main app
-    router.replace('..');
+    router.replace('/(tabs)');
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>What's your taste?</Text>
-      <Text style={styles.subtitle}>
-        Select your favorite cuisines to get personalized recommendations
-      </Text>
+    <>
+      <Stack.Screen 
+        options={{
+          gestureEnabled: false,
+          gestureDirection: "horizontal",
+          fullScreenGestureEnabled: false,
+          animation: 'none'
+        }} 
+      />
+      <View style={styles.container}>
+        <Text style={styles.title}>What's your taste?</Text>
+        <Text style={styles.subtitle}>
+          Select your favorite cuisines to get personalized recommendations
+        </Text>
 
-      <ScrollView style={styles.cuisineList}>
-        {CUISINES.map((cuisine) => (
-          <TouchableOpacity
-            key={cuisine}
-            style={[
-              styles.cuisineButton,
-              selectedCuisines.includes(cuisine) && styles.selectedCuisine,
-            ]}
-            onPress={() => toggleCuisine(cuisine)}
-          >
-            <Text
+        <ScrollView style={styles.cuisineList}>
+          {CUISINES.map((cuisine) => (
+            <TouchableOpacity
+              key={cuisine}
               style={[
-                styles.cuisineText,
-                selectedCuisines.includes(cuisine) && styles.selectedCuisineText,
+                styles.cuisineButton,
+                selectedCuisines.includes(cuisine) && styles.selectedCuisine,
               ]}
+              onPress={() => toggleCuisine(cuisine)}
             >
-              {cuisine}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.cuisineText,
+                  selectedCuisines.includes(cuisine) && styles.selectedCuisineText,
+                ]}
+              >
+                {cuisine}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            selectedCuisines.length === 0 && styles.buttonDisabled,
-          ]}
-          onPress={handleContinue}
-          disabled={selectedCuisines.length === 0}
-        >
-          <Text style={styles.buttonText}>Continue</Text>
-        </TouchableOpacity>
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              selectedCuisines.length === 0 && styles.buttonDisabled,
+            ]}
+            onPress={handleContinue}
+            disabled={selectedCuisines.length === 0}
+          >
+            <Text style={styles.buttonText}>Continue</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
