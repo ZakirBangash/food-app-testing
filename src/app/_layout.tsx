@@ -10,6 +10,26 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useAuthStore } from '../store/auth';
 import { useDeepLinking } from '@/hooks/useDeepLinking';
+import { useNotificationSetup } from '@/features/notifications/hooks/useNotificationSetup';
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
+
+// Stack screen options
+const stackScreenOptions = {
+  auth: {
+    headerShown: false,
+  },
+  onboarding: {
+    headerShown: false,
+  },
+  tabs: {
+    headerShown: false,
+  },
+  modal: {
+    presentation: "modal",
+  },
+} as const;
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -17,24 +37,28 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
+/**
+ * Root layout component that handles app initialization
+ */
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('@/assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  // Initialize core app features
+  useNotificationSetup();
+  useDeepLinking();
+
+  // Handle font loading errors
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
+  // Hide splash screen when fonts are loaded
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -48,51 +72,45 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+/**
+ * Navigation layout component that handles routing and theme
+ */
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading } = useAuthStore();
 
-  // Initialize deep linking
-  useDeepLinking();
-
   // Handle initial navigation based on auth state
   useEffect(() => {
     if (isLoading) return;
 
     if (!user) {
-      router.replace('/(auth)/login');
+      router.replace("/(auth)/register");
     } else if (pathname === '/') {
-      // Only redirect to onboarding if we're at the root
-      router.replace('/(onboarding)/welcome');
+      router.replace('/welcome');
     }
-  }, [user, isLoading, pathname]);
+  }, [user, isLoading, pathname, router]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen 
           name="(auth)" 
-          options={{ 
-            headerShown: false, 
-            // animation: "fade",
-            // gestureEnabled: false,
-            // gestureDirection: "horizontal",
-            // fullScreenGestureEnabled: false
-          }} 
+          options={stackScreenOptions.auth}
         />
         <Stack.Screen 
           name="(onboarding)" 
-          options={{ 
-            headerShown: false,
-            // gestureEnabled: false,
-            // gestureDirection: "horizontal",
-            // fullScreenGestureEnabled: false
-          }} 
+          options={stackScreenOptions.onboarding}
         />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+        <Stack.Screen 
+          name="(tabs)" 
+          options={stackScreenOptions.tabs}
+        />
+        <Stack.Screen 
+          name="modal" 
+          options={stackScreenOptions.modal}
+        />
       </Stack>
     </ThemeProvider>
   );

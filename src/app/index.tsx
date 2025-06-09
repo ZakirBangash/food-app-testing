@@ -8,11 +8,11 @@ export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    initialize();
+    // initialize();
   }, []);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (false) return;
 
     if (!user) {
       router.replace('../(auth)/login');
