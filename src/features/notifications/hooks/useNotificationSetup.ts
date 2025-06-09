@@ -3,6 +3,7 @@ import * as Notifications from "expo-notifications";
 import { useRouter } from 'expo-router';
 import { registerForPushNotificationsAsync } from '../utils/notificationUtils';
 import { useNotificationStore } from '../store/notificationStore';
+import { getNotificationRoute } from '../config/notificationRoutes';
 
 /**
  * Hook to set up notification listeners
@@ -39,8 +40,10 @@ export const useNotificationSetup = () => {
 
       // Handle navigation when notification is tapped
       const data = response.notification.request.content.data;
-      if (data?.screen && typeof data.screen === 'string') {
-        router.push(data.screen as any); // Type assertion needed due to expo-router's strict typing
+      if (data?.routeKey && typeof data.routeKey === 'string') {
+        const params = data.params as Record<string, string> | undefined;
+        const route = getNotificationRoute(data.routeKey, params);
+        router.push(route as any); // Type assertion needed due to expo-router's strict typing
       }
     });
 
